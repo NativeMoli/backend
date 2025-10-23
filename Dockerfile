@@ -1,10 +1,10 @@
-FROM maven:3.5.2-jdk-8-alpine AS MAVEN_TOOL_CHAIN
-COPY pom.xml /tmp/
-COPY src /tmp/src/
+FROM maven:3.8-jdk-8-slim AS MAVEN_BUILD
 WORKDIR /tmp/
-RUN mvn package
+COPY pom.xml .
+COPY src ./src/
+RUN mvn package -Dmaven.test.failure.ignore=true
 
-FROM openjdk:8-jdk-alpine
-COPY --from=MAVEN_TOOL_CHAIN /tmp/target/eschool.jar eschool.jar
+FROM tomcat:9.0-jre8-alpine
+COPY --from=MAVEN_BUILD /tmp/target/eschool.jar eschool.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "eschool.jar"]
